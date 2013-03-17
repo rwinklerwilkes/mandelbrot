@@ -3,6 +3,7 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.util.Stack;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import java.awt.event.*;
@@ -20,10 +21,12 @@ public class Mandelbrot extends JPanel {
 	private double endX;
 	private double beginY;
 	private double endY;
+	private Stack<double[]> oldVal;
 	private static final int WIDTH = 800;
 	private static final int HEIGHT = 400;
     public Mandelbrot()
     {
+		oldVal = new Stack<double[]>();
 		beginX = -2;
 		endX = 1;
 		beginY = -1;
@@ -41,8 +44,8 @@ public class Mandelbrot extends JPanel {
         JFrame frame = new JFrame("Mandelbrot Set");
         frame.add(this);
 		mandListener mListen = new mandListener();
-		frame.addMouseListener(mListen);
-        frame.pack();
+		this.addMouseListener(mListen);
+        frame.setSize(WIDTH,HEIGHT);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setResizable(false);
         frame.setVisible(true);
@@ -114,31 +117,58 @@ public class Mandelbrot extends JPanel {
     {
         Mandelbrot m = new Mandelbrot();
     }
-	class mandListener implements MouseListener
+	class mandListener implements MouseListener,ActionListener
 	 {
-		public void mousePressed(MouseEvent e) {
+		public void mousePressed(MouseEvent e)
+		{
 		}
 
-		public void mouseReleased(MouseEvent e) {
+		public void mouseReleased(MouseEvent e) 
+		{
 		}
 
-		public void mouseEntered(MouseEvent e) {
+		public void mouseEntered(MouseEvent e) 
+		{
 		}
 
-		public void mouseExited(MouseEvent e) {
+		public void mouseExited(MouseEvent e) 
+		{
 		}
 
-		public void mouseClicked(MouseEvent e) {
-		   int xPos = e.getX();
-		   int yPos = e.getY();
-		   double scaleX = transWidth(xPos);
-		   double scaleY = transHeight(yPos);
-		   beginX = transWidth(xPos-100);
-		   endX = transWidth(xPos+100);
-		   beginY = transHeight(yPos - 50);
-		   endY = transHeight(yPos + 50);
-		   fillPixels(pixelVals);
-		   fillCanvas(pixelVals);
+		public void mouseClicked(MouseEvent e) 
+		{
+			if(e.getButton()==MouseEvent.BUTTON1)
+			{
+				double[] lastVals = new double[]{beginX,endX,beginY,endY};
+				oldVal.push(lastVals);
+				int xPos = e.getX();
+				int yPos = e.getY();
+				double scaleX = transWidth(xPos);
+				double scaleY = transHeight(yPos);
+				beginX = transWidth(xPos-100);
+				endX = transWidth(xPos+100);
+				beginY = transHeight(yPos - 50);
+				endY = transHeight(yPos + 50);
+				fillPixels(pixelVals);
+				fillCanvas(pixelVals);
+			}
+			else if(e.getButton()==MouseEvent.BUTTON3)
+			{
+				if(!oldVal.empty())
+				{
+					double[] goBack = oldVal.pop();
+					beginX = goBack[0];
+					endX = goBack[1];
+					beginY = goBack[2];
+					endY = goBack[3];
+					fillPixels(pixelVals);
+					fillCanvas(pixelVals);
+				}
+			}
+		}
+		public void actionPerformed(ActionEvent e)
+		{
+			//After I create a menu, I want this to handle events from the menu
 		}
 	 }
 }
